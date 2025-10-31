@@ -202,7 +202,7 @@ public class CrcGuiString extends JFrame {
      * As such, CRC-7 and below are NOT supported, and the encoded data length should be a multiple of 8 bits.
      * @param data The data to encode.
      *             If data length is not a multiple of 8, the last few least significant bits are done bitwise.
-     * @param polyBits The generator polynomial (in binary, with implicit 1 written down).
+     * @param polyBits The generator polynomial (in binary, with leading 1 written down).
      *                 Only supports CRC-8 or higher (width >= 9)
      * @param width The length of the generator polynomial.
      * @return The original data + CRC appended at the end.
@@ -326,27 +326,23 @@ public class CrcGuiString extends JFrame {
             return;
         }
         if (Objects.equals(outputArea.getText(), OUTPUT_PLACEHOLDER)) {outputArea.setText("");}
-        outputArea.append(String.format("Selected: %s | Lookup: %s\n", selectedCrc, useLookup ? "ON" : "OFF"));
-        long start = System.nanoTime();
+        outputArea.append(String.format("Selected: %s | Lookup: %s\n----------\n", selectedCrc, useLookup ? "ON" : "OFF"));
+        outputArea.append("Data (length " + data.length() + "): " + data + "\n");
+        outputArea.append("Polynomial (CRC-" + (polyLength - 1) + "): " + poly + "\n");
+        long end = 0, start = System.nanoTime();
         if (mode == 1) {
             String lastCodeword = useLookup ? encodeLookup(data, poly, polyLength) : encodeBitwise(data, poly, polyLength);
             String remainder = lastCodeword.substring(data.length());
-            long end = System.nanoTime();
-            outputArea.append("----------\n");
-            outputArea.append("Data (length " + data.length() + "): " + data + "\n");
-            outputArea.append("Polynomial (CRC-" + (polyLength - 1) + "): " + poly + "\n");
+            end = System.nanoTime();
             outputArea.append("Remainder: " + remainder + "\n");
             outputArea.append("Codeword: " + lastCodeword + "\n");
-            outputArea.append(String.format("Encode done in %.3f ms\n\n", (end - start) / 1e6));
             inputArea.setText(lastCodeword);
         } else if (mode == 2) {
             boolean valid = useLookup ? decodeLookup(data, poly, polyLength) : decodeBitwise(data, poly, polyLength);
-            long end = System.nanoTime();
-            outputArea.append("----------\n");
-            outputArea.append("Codeword: " + data + "\n");
+            end = System.nanoTime();
             outputArea.append(valid ? "✅ No error.\n" : "❌ Error detected.\n");
-            outputArea.append(String.format("Decode done in %.3f ms\n\n", (end - start) / 1e6));
         }
+        outputArea.append(String.format("Decode done in %.3f ms\n\n", (end - start) / 1e6));
     }
 
     // --- GUI & Utility ---
@@ -377,6 +373,11 @@ public class CrcGuiString extends JFrame {
             if (flipped.add(pos)) bits[pos] = bits[pos] == '0' ? '1' : '0';
         }
         String corrupted = new String(bits);
+        if (Objects.equals(outputArea.getText(), OUTPUT_PLACEHOLDER)) {outputArea.setText("");}
+        outputArea.append("Stimulate Error\n----------\n");
+        outputArea.append("Original data: " + data + "\n");
+        outputArea.append("Corrupted data: " + corrupted + "\n");
+        outputArea.append("Flipped " + num + " bit(s) at: " + flipped + "\n\n");
         inputArea.setText(corrupted);
         JOptionPane.showMessageDialog(this, "Flipped " + num + " bit(s) at: " + flipped);
     }
