@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NOIR AI - Sản phẩm</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='templatemo-noir-fashion.css') }}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+/* GRID CHÍNH */
+#collectionsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 40px;
+    padding: 60px 0;
+}
+
+/* CARD */
+.collection-card {
+    display: flex;
+    flex-direction: column;
+    background: rgba(15,15,20,0.98);
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid rgba(255,51,102,0.15);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    cursor: pointer;
+    transition: all 0.5s;
+}
+
+.collection-card:hover {
+    transform: translateY(-10px);
+    border-color: #ff3366;
+    box-shadow: 0 20px 40px rgba(255,51,102,0.35);
+}
+
+/* ẢNH */
+.collection-thumbnail img {
+    width: 100%;
+    height: 280px;
+    object-fit: cover;
+    transition: transform 0.5s;
+}
+
+.collection-card:hover img {
+    transform: scale(1.1);
+}
+
+/* NỘI DUNG CARD */
+.card-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 16px 20px;
+    text-align: center;
+    flex: 1; /* card cao vừa đủ nội dung */
+}
+
+.card-badge {
+    display: inline-block;
+    padding: 6px 16px;
+    border-radius: 30px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+    color: #fff;
+    text-transform: uppercase;
+}
+
+.card-title {
+    margin: 8px 0;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.price-text {
+    font-size: 22px;
+    font-weight: 700;
+    color: #ff3366;
+    margin: 10px 0;
+}
+
+/* NÚT ADD TO CART */
+.add-to-cart-btn {
+    margin-top: 10px;
+    padding: 14px;
+    width: 100%;
+    background: #ff3366;
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    font-weight: 700;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.add-to-cart-btn:hover {
+    background: #ff1744;
+    transform: translateY(-4px);
+}
+
+/* CLICK TOÀN BỘ CARD */
+.card-click-area {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 70%;
+    background: transparent;
+    cursor: pointer;
+    z-index: 10;
+}
+
+/* TAB CONTENT */
+.tab-content {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 40px;
+    padding: 40px 0;
+}
+
+.tab-content:not(.active) {
+    display: none;
+}
+
+/* RESPONSIVE */
+@media (max-width: 1200px) {
+    #collectionsGrid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 900px) {
+    #collectionsGrid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 600px) {
+    #collectionsGrid { grid-template-columns: 1fr; gap: 30px; padding: 40px 20px; }
+}
+</style>
+</head>
+<body>
+
+{% include 'partials/navbar.html' %}
+
+<section class="collections" id="collections">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">AI sports products and services</h2>
+            <p class="section-subtitle">CCamera • Sensor • Software • Accessories</p>
+        </div>
+
+        <!-- TABS -->
+        <div class="category-tabs">
+            <button class="tab-btn active" data-category="all">All</button>
+            <button class="tab-btn" data-category="camera">Camera AI</button>
+            <button class="tab-btn" data-category="module">Processing equipment</button>
+            <button class="tab-btn" data-category="sensor">Sensor & VAR</button>
+            <button class="tab-btn" data-category="software">Software & Services</button>
+            <button class="tab-btn" data-category="accessory">Accessory</button>
+        </div>
+
+        <!-- TAB ALL -->
+        <div class="grid tab-content active" data-category="all">
+            {% for product in products %}
+                <div class="collection-card">
+                    <a href="{{ url_for('product_detail', pid=product.product_id) }}" class="card-click-area"></a>
+                    <div class="collection-thumbnail">
+                        {% set img_path = product.image_url|default('images/placeholder.jpg') %}
+                        <img src="{{ url_for('static', filename=img_path) }}" alt="{{ product.name }}"
+                             onerror="this.src='{{ url_for('static', filename='images/placeholder.jpg') }}'">
+                    </div>
+                    <div class="card-content">
+                        <span class="card-badge" style="background:{% if product.type == 'Accessory' %}#ffb800{% elif 'camera' in (product.type|lower) %}#ff3366{% elif product.type|lower == 'module' %}#9c27b0{% elif product.type|lower == 'sensor' %}#f44336{% else %}#2196f3{% endif %}">
+                            {{ (product.type or product.category or 'Sản phẩm')|upper }}
+                        </span>
+                        <h3 class="card-title">{{ product.name }}</h3>
+                        <p class="price-text">
+                            {% if product.price_usd and product.price_usd > 0 %}
+                                ${{ "%.2f"|format(product.price_usd) }}
+                            {% else %}
+                                Contact
+                            {% endif %}
+                        </p>
+                        {% if session.user_id %}
+                        <form action="{{ url_for('add_to_cart') }}" method="POST">
+                            <input type="hidden" name="product_id" value="{{ product.product_id }}">
+                            <button type="submit" class="add-to-cart-btn">ADD TO CART</button>
+                        </form>
+                        {% else %}
+                        <a href="{{ url_for('login') }}" class="add-to-cart-btn">LOGIN TO BUY</a>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- TAB CAMERA và các tab khác -->
+        <div class="grid tab-content" data-category="camera">
+            {% for product in products %}
+                {% if 'camera' in (product.type|lower) %}
+                    <div class="collection-card">
+                        <a href="{{ url_for('product_detail', pid=product.product_id) }}" class="card-click-area"></a>
+                        <div class="collection-thumbnail">
+                            {% set img_path = product.image_url|default('images/placeholder.jpg') %}
+                            <img src="{{ url_for('static', filename=img_path) }}" alt="{{ product.name }}"
+                                 onerror="this.src='{{ url_for('static', filename='images/placeholder.jpg') }}'">
+                        </div>
+                        <div class="card-content">
+                            <span class="card-badge" style="background:{% if 'camera' in (product.type|lower) %}#ff3366{% endif %}">
+                                {{ product.type|upper }}
+                            </span>
+                            <h3 class="card-title">{{ product.name }}</h3>
+                            <p class="price-text">
+                                {% if product.price_usd and product.price_usd > 0 %}
+                                    ${{ "%.2f"|format(product.price_usd) }}
+                                {% else %}
+                                    Contact
+                                {% endif %}
+                            </p>
+                            {% if session.user_id %}
+                            <form action="{{ url_for('add_to_cart') }}" method="POST">
+                                <input type="hidden" name="product_id" value="{{ product.product_id }}">
+                                <button type="submit" class="add-to-cart-btn">ADD TO CART</button>
+                            </form>
+                            {% else %}
+                            <a href="{{ url_for('login') }}" class="add-to-cart-btn">LOGIN TO BUY</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+        <div class="grid tab-content" data-category="module">
+            {% for product in products %}
+                {% if 'module' in (product.type|lower) %}
+                    <div class="collection-card">
+                        <a href="{{ url_for('product_detail', pid=product.product_id) }}" class="card-click-area"></a>
+                        <div class="collection-thumbnail">
+                            {% set img_path = product.image_url|default('images/placeholder.jpg') %}
+                            <img src="{{ url_for('static', filename=img_path) }}" alt="{{ product.name }}"
+                                 onerror="this.src='{{ url_for('static', filename='images/placeholder.jpg') }}'">
+                        </div>
+                        <div class="card-content">
+                            <span class="card-badge" style="background:{% if 'camera' in (product.type|lower) %}#ff3366{% endif %}">
+                                {{ product.type|upper }}
+                            </span>
+                            <h3 class="card-title">{{ product.name }}</h3>
+                            <p class="price-text">
+                                {% if product.price_usd and product.price_usd > 0 %}
+                                    ${{ "%.2f"|format(product.price_usd) }}
+                                {% else %}
+                                    Contact
+                                {% endif %}
+                            </p>
+                            {% if session.user_id %}
+                           <form action="{{ url_for('add_to_cart') }}" method="POST">
+                                <input type="hidden" name="product_id" value="{{ product.product_id }}">
+                                <button type="submit" class="add-to-cart-btn">ADD TO CART</button>
+                            </form>
+                            {% else %}
+                            <a href="{{ url_for('login') }}" class="add-to-cart-btn">LOGIN TO BUY</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+        <div class="grid tab-content" data-category="sensor">
+            {% for product in products %}
+                {% if 'sensor' in (product.type|lower) %}
+                    <div class="collection-card">
+                        <a href="{{ url_for('product_detail', pid=product.product_id) }}" class="card-click-area"></a>
+                        <div class="collection-thumbnail">
+                            {% set img_path = product.image_url|default('images/placeholder.jpg') %}
+                            <img src="{{ url_for('static', filename=img_path) }}" alt="{{ product.name }}"
+                                 onerror="this.src='{{ url_for('static', filename='images/placeholder.jpg') }}'">
+                        </div>
+                        <div class="card-content">
+                            <span class="card-badge" style="background:{% if 'camera' in (product.type|lower) %}#ff3366{% endif %}">
+                                {{ product.type|upper }}
+                            </span>
+                            <h3 class="card-title">{{ product.name }}</h3>
+                            <p class="price-text">
+                                {% if product.price_usd and product.price_usd > 0 %}
+                                    ${{ "%.2f"|format(product.price_usd) }}
+                                {% else %}
+                                    Contact
+                                {% endif %}
+                            </p>
+                            {% if session.user_id %}
+                            <form action="{{ url_for('add_to_cart') }}" method="POST">
+                                <input type="hidden" name="product_id" value="{{ product.product_id }}">
+                                <button type="submit" class="add-to-cart-btn">ADD TO CART</button>
+                            </form>
+                            {% else %}
+                            <a href="{{ url_for('login') }}" class="add-to-cart-btn">LOGIN TO BUY</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+        <div class="grid tab-content" data-category="software">
+            {% for product in products %}
+                {% if 'software' in (product.type|lower) %}
+                    <div class="collection-card">
+                        <a href="{{ url_for('product_detail', pid=product.product_id) }}" class="card-click-area"></a>
+                        <div class="collection-thumbnail">
+                            {% set img_path = product.image_url|default('images/placeholder.jpg') %}
+                            <img src="{{ url_for('static', filename=img_path) }}" alt="{{ product.name }}"
+                                 onerror="this.src='{{ url_for('static', filename='images/placeholder.jpg') }}'">
+                        </div>
+                        <div class="card-content">
+                            <span class="card-badge" style="background:{% if 'camera' in (product.type|lower) %}#ff3366{% endif %}">
+                                {{ product.type|upper }}
+                            </span>
+                            <h3 class="card-title">{{ product.name }}</h3>
+                            <p class="price-text">
+                                {% if product.price_usd and product.price_usd > 0 %}
+                                    ${{ "%.2f"|format(product.price_usd) }}
+                                {% else %}
+                                    Contact
+                                {% endif %}
+                            </p>
+                            {% if session.user_id %}
+                            <form action="{{ url_for('add_to_cart') }}" method="POST">
+                                <input type="hidden" name="product_id" value="{{ product.product_id }}">
+                                <button type="submit" class="add-to-cart-btn">ADD TO CART</button>
+                            </form>
+                            {% else %}
+                            <a href="{{ url_for('login') }}" class="add-to-cart-btn">LOGIN TO BUY</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+        <div class="grid tab-content" data-category="accessory">
+            {% for product in products %}
+                {% if 'accessory' in (product.type|lower) %}
+                    <div class="collection-card">
+                        <a href="{{ url_for('product_detail', pid=product.product_id) }}" class="card-click-area"></a>
+                        <div class="collection-thumbnail">
+                            {% set img_path = product.image_url|default('images/placeholder.jpg') %}
+                            <img src="{{ url_for('static', filename=img_path) }}" alt="{{ product.name }}"
+                                 onerror="this.src='{{ url_for('static', filename='images/placeholder.jpg') }}'">
+                        </div>
+                        <div class="card-content">
+                            <span class="card-badge" style="background:{% if 'camera' in (product.type|lower) %}#ff3366{% endif %}">
+                                {{ product.type|upper }}
+                            </span>
+                            <h3 class="card-title">{{ product.name }}</h3>
+                            <p class="price-text">
+                                {% if product.price_usd and product.price_usd > 0 %}
+                                    ${{ "%.2f"|format(product.price_usd) }}
+                                {% else %}
+                                    Contact
+                                {% endif %}
+                            </p>
+                            {% if session.user_id %}
+                            <form action="{{ url_for('add_to_cart') }}" method="POST">
+                                <input type="hidden" name="product_id" value="{{ product.product_id }}">
+                                <button type="submit" class="add-to-cart-btn">ADD TO CART</button>
+                            </form>
+                            {% else %}
+                            <a href="{{ url_for('login') }}" class="add-to-cart-btn">LOGIN TO BUY</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+
+<script>
+document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const cat = btn.dataset.category;
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.querySelectorAll('.tab-content').forEach(t => {
+            t.classList.remove('active');
+            if (t.dataset.category === cat) t.classList.add('active');
+        });
+    });
+});
+</script>
+</body>
+</html>

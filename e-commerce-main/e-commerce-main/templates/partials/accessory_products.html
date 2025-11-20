@@ -1,0 +1,37 @@
+<!-- Templates/partials/accessory_products.html -->
+{% for product in products %}
+    {% if product.type and product.type|lower == 'accessory' %}
+    <div class="collection-card">
+        <div class="collection-thumbnail">
+            {% set img_path = product.image_url|default('images/placeholder.jpg') %}
+            {% if img_path.startswith('/') %}{% set img_path = img_path[1:] %}{% endif %}
+            <img src="{{ url_for('static', filename=img_path) }}"
+                 alt="{{ product.name }}"
+                 onerror="this.src='{{ url_for('static', filename='images/placeholder.jpg') }}'">
+        </div>
+        <div class="card-content">
+            <span class="card-badge" style="background:#ffb800">PHỤ KIỆN</span>
+            <h3 class="card-title">{{ product.name }}</h3>
+            <p class="card-subtitle">{{ product.subcategory|default('Phụ kiện cao cấp') }}</p>
+            <p class="price-text">
+                {% if product.price_usd and product.price_usd > 0 %}
+                    ${{ "%.2f"|format(product.price_usd) }}
+                {% else %}
+                    Contact
+                {% endif %}
+            </p>
+
+            {% if session.user_id %}
+                <form action="{{ url_for('add_to_cart') }}" method="POST">
+                    <input type="hidden" name="product_id" value="{{ product.product_id }}">
+                    <button type="submit" class="add-to-cart-btn">ADD TO CART</button>
+                </form>
+            {% else %}
+                <a href="{{ url_for('login') }}" class="add-to-cart-btn" style="text-decoration:none;text-align:center;display:block;">
+                    LOGIN TO BUY
+                </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+{% endfor %}

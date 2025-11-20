@@ -1,0 +1,101 @@
+<!-- templates/partners_map.html – copy-paste nguyên file này -->
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NOIR AI - Đối tác & Sân vận động</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='templatemo-noir-fashion.css') }}">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        #map { height: 85vh; width: 100%; border-radius: 20px; box-shadow: 0 20px 60px rgba(255,51,102,0.3); margin-top: 30px; }
+        .leaflet-popup-content-wrapper, .leaflet-popup-tip { background: #111 !important; color: white !important; border: 2px solid #ff3366 !important; }
+        .leaflet-popup-content { margin: 15px !important; line-height: 1.5; }
+        .popup-title { font-size: 20px; font-weight: 700; color: #ff3366; margin: 0 0 8px 0; }
+        .popup-address { font-size: 14px; color: #ccc; margin: 5px 0; }
+        .popup-phone { color: #0f0; font-weight: bold; }
+        .popup-btn {
+            display: inline-block; margin: 10px 5px 0 0; padding: 8px 16px; background: #ff3366; color: white;
+            border-radius: 30px; text-decoration: none; font-size: 13px; font-weight: 600;
+        }
+        .popup-btn:hover { background: #ff1744; }
+        .popup-img { width: 100%; max-width: 280px; border-radius: 12px; margin-top: 12px; }
+        .section-title { text-align: center; font-size: 44px; margin: 60px 0 10px; }
+        .section-subtitle { text-align: center; color: #aaa; font-size: 18px; margin-bottom: 40px; }
+    </style>
+</head>
+<body>
+    {% include 'partials/navbar.html' %}
+
+    <div class="container" style="padding:100px 20px;min-height:80vh">
+        <h2 class="section-title">Partners & Stadiums Using NOIR AI</h2>
+        <p class="section-subtitle">Over 80+ sports venues nationwide have trusted our AI & VAR camera system</p>
+        <div id="map"></div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        const map = L.map('map').setView([14.0583, 108.2772], 6);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        // CHỈ SỬA DANH SÁCH PARTNER Ở ĐÂY
+        const partners = [
+            {
+                name: "Sân vận động Quốc gia Mỹ Đình",
+                address: "Lê Quang Đạo, Mỹ Đình, Hà Nội",
+                phone: "024 3838 5555",
+                website: "https://mydinhstadium.vn",
+                lat: 21.0300, lng: 105.7638,
+                img: "partners/mydinh.jpg",
+                type: "Sân Quốc gia • 40.192 chỗ"
+            },
+            {
+                name: "Sân vận động Hàng Đẫy",
+                address: "Trịnh Hoài Đức, Đống Đa, Hà Nội",
+                phone: "024 3734 5678",
+                lat: 21.0290, lng: 105.8329,
+                img: "partners/hangday.jpg",
+                type: "V.League"
+            },
+            {
+                name: "Sân Thống Nhất",
+                address: "30 Nguyễn Kim, Quận 10, TP.HCM",
+                phone: "028 3865 4321",
+                lat: 10.7606, lng: 106.6631,
+                img: "partners/thongnhat.jpg",
+                type: "V.League"
+            },
+        ];
+
+        // LẤY ĐƯỜNG DẪN STATIC ĐÚNG TỪ FLASK
+        const staticBase = "{{ url_for('static', filename='images/') }}";
+
+        partners.forEach(p => {
+            const marker = L.marker([p.lat, p.lng]).addTo(map);
+
+            const popup = `
+                <div class="popup-title">${p.name}</div>
+                <div class="popup-address">${p.address}</div>
+                ${p.phone ? `<div class="popup-phone">Điện thoại: ${p.phone}</div>` : ''}
+                <div style="margin:10px 0;color:#888;font-size:13px;">${p.type}</div>
+                ${p.img ? `<img src="${staticBase + p.img}" class="popup-img" alt="${p.name}">` : ''}
+                <div style="margin-top:15px;">
+                    <a href="https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}"
+                       target="_blank" class="popup-btn">Chỉ đường</a>
+                    ${p.website ? `<a href="${p.website}" target="_blank" class="popup-btn" style="background:#333">Website</a>` : ''}
+                </div>
+            `;
+
+            marker.bindPopup(popup, { maxWidth: 300 });
+        });
+
+        // Zoom thấy hết các điểm
+        const group = new L.featureGroup(partners.map(p => L.marker([p.lat, p.lng])));
+        map.fitBounds(group.getBounds().pad(0.3));
+</script>
+
+</body>
+</html>

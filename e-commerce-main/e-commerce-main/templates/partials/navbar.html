@@ -1,0 +1,123 @@
+<!-- Templates/partials/navbar.html -->
+<!-- Templates/partials/navbar.html -->
+<nav style="pointer-events: none;">
+    <div class="nav-container" style="pointer-events: auto;">
+        <a href="{{ url_for('index') }}" class="logo-link">
+            <div class="logo-text">NOIR AI</div>
+        </a>
+
+        <ul class="nav-links">
+
+            <li><a href="{{ url_for('index') }}" class="nav-link {% if request.endpoint == 'index' %}active{% endif %}">Home</a></li>
+
+            <li><a href="{{ url_for('collections') }}" class="nav-link {% if request.endpoint == 'collections' %}active{% endif %}">Products</a></li>
+
+            <li><a href="{{ url_for('index') }}" class="nav-link {% if request.endpoint == 'index' %}active{% endif %}">Featured</a></li>
+
+            <li><a href="{{ url_for('index') }}" class="nav-link {% if request.endpoint == 'index' %}active{% endif %}">Contact</a></li>
+
+            <li><a href="{{ url_for('partners_map') }}" class="nav-link {% if request.endpoint == 'partners_map' %}active{% endif %}">Partners</a></li>
+
+            <li><a href="{{ url_for('index') }}" class="nav-cta">Get In Touch</a></li>
+
+            {% if session.user_id %}
+                <li class="user-menu">
+                    <div class="user-avatar-wrapper">
+                        <img src="{{ url_for('static', filename='images/avatar.jpg') }}" alt="User" class="user-avatar">
+                        <span class="username">Hi, {{ session.username|default('User') }}</span>
+                    </div>
+                    <div class="dropdown-menu">
+                        <a href="{{ url_for('cart') }}">Cart</a>
+                        <hr>
+                        <a href="{{ url_for('logout') }}" class="logout-link">Logout</a>
+                    </div>
+                </li>
+            {% else %}
+                <li><a href="{{ url_for('login') }}" class="nav-cta">Login</a></li>
+            {% endif %}
+
+        </ul>
+
+
+        <div class="menu-toggle">
+            <span></span><span></span><span></span>
+        </div>
+    </div>
+</nav>
+
+<style>
+.user-menu {
+    position: relative;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+.user-avatar-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+}
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid var(--accent);
+    object-fit: cover;
+    box-shadow: 0 0 20px rgba(255,51,102,0.4);
+    transition: all 0.3s;
+}
+.username {
+    color: white;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: rgba(10,10,10,0.98);
+    border: 1px solid rgba(255,51,102,0.3);
+    border-radius: 8px;
+    min-width: 180px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.4s ease;
+    z-index: 999;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+}
+.dropdown-menu a {
+    display: block;
+    padding: 12px 20px;
+    color: var(--text-light);
+    text-decoration: none;
+    font-size: 13px;
+    letter-spacing: 1px;
+    transition: all 0.3s;
+}
+.dropdown-menu a:hover {
+    background: var(--accent);
+    color: white;
+    padding-left: 25px;
+}
+.dropdown-menu hr {
+    margin: 8px 0;
+    border: none;
+    border-top: 1px solid rgba(255,255,255,0.1);
+}
+.logout-link {
+    color: #ff6690 !important;
+}
+.user-menu:hover .dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+.user-menu:hover .user-avatar {
+    transform: scale(1.1);
+    box-shadow: 0 0 30px rgba(255,51,102,0.6);
+}
+</style>

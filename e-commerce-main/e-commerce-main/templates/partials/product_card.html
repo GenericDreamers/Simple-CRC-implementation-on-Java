@@ -1,0 +1,66 @@
+<div class="collection-card">
+    <a href="{{ url_for('product_detail', pid=product.product_id) }}" class="card-click-area"></a>
+
+    <div class="collection-thumbnail">
+        {% set img_path = product.image_url|default('images/placeholder.jpg') %}
+        {% if img_path.startswith('/') %}{% set img_path = img_path[1:] %}{% endif %}
+        <img src="{{ url_for('static', filename=img_path) }}" alt="{{ product.name }}">
+    </div>
+
+    <div class="card-content">
+        <span class="card-badge" style="background:{% if product.type=='Accessory' %}#ffb800{% else %}#ff3366{% endif %}">
+            {{ (product.type or 'SẢN PHẨM')|upper }}
+        </span>
+
+        <h3 class="card-title">
+            <a href="{{ url_for('product_detail', pid=product.product_id) }}" class="title-click">
+                {{ product.name }}
+            </a>
+        </h3>
+
+        <p class="card-subtitle">{{ product.subcategory|default('') }}</p>
+
+        <!-- GIÁ MUA -->
+        {% if product.price_usd > 0 %}
+            <div style="margin:10px 0;font-size:19px;color:#ff3366;font-weight:800">
+                MUA: ${{ "%.2f"|format(product.price_usd) }}
+            </div>
+        {% endif %}
+
+        <!-- GIÁ THUÊ = 5% GIÁ MUA (TỰ ĐỘNG, KHÔNG CẦN CỘT DB) -->
+        {% if product.price_usd > 0 %}
+            {% set rent_price_day = product.price_usd * 0.05 %}
+            <div style="margin:10px 0;font-size:17px;color:#4caf50;font-weight:700">
+                THUÊ: ${{ "%.2f"|format(rent_price_day) }}/ngày
+            </div>
+        {% endif %}
+
+        <!-- 2 NÚT RÕ RÀNG, LUÔN HIỆN (nếu có giá mua) -->
+        {% if product.price_usd > 0 and session.user_id %}
+            <div style="display:flex;gap:12px;justify-content:center;margin-top:18px;">
+                <!-- NÚT MUA -->
+                <form action="{{ url_for('add_to_cart') }}" method="POST" style="margin:0">
+                    <input type="hidden" name="product_id" value="{{ product.product_id }}">
+                    <input type="hidden" name="action" value="buy">
+                    <button type="submit" style="background:#ff3366;color:white;padding:14px 28px;border:none;border-radius:50px;font-weight:900;font-size:15px;min-width:110px;">
+                        MUA
+                    </button>
+                </form>
+
+                <!-- NÚT THUÊ – LUÔN HIỆN, MÀU XANH LÁ SIÊU NỔI -->
+                <form action="{{ url_for('add_to_cart') }}" method="POST" style="margin:0">
+                    <input type="hidden" name="product_id" value="{{ product.product_id }}">
+                    <input type="hidden" name="action" value="rent">
+                    <input type="hidden" name="rental_days" value="7">
+                    <button type="submit" style="background:#4caf50;color:white;padding:14px 28px;border:none;border-radius:50px;font-weight:900;font-size:15px;min-width:110px;box-shadow:0 8px 25px rgba(76,175,80,0.4);">
+                        THUÊ 7 NGÀY
+                    </button>
+                </form>
+            </div>
+        {% else %}
+            <a href="{{ url_for('login') }}" style="display:block;margin-top:20px;padding:14px;background:#333;color:white;text-align:center;border-radius:50px;text-decoration:none;font-weight:bold;">
+                LOGIN TO BUY/THUÊ
+            </a>
+        {% endif %}
+    </div>
+</div>

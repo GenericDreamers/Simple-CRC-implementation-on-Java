@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giỏ hàng - NOIR AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='templatemo-noir-fashion.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        .cart-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 20px;
+            margin: 40px 0;
+        }
+        .cart-table th {
+            background: rgba(255,51,102,0.2);
+            padding: 22px 15px;
+            color: #ff3366;
+            font-weight: 800;
+            font-size: 18px;
+            border-radius: 16px;
+            text-align: center;
+        }
+        .cart-table td {
+            background: rgba(255,255,255,0.04);
+            padding: 25px 15px;
+            text-align: center;
+            vertical-align: middle;
+            border-radius: 16px;
+            transition: all 0.3s ease;
+        }
+        .cart-table tr:hover td {
+            background: rgba(255,51,102,0.08);
+            transform: translateY(-4px);
+            box-shadow: 0 15px 40px rgba(255,51,102,0.15);
+        }
+        .cart-item-img {
+            width: 90px;
+            height: 90px;
+            object-fit: cover;
+            border-radius: 20px;
+            border: 3px solid #ff3366;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+        }
+        .action-select, .quantity-input, .days-input {
+            padding: 12px 16px;
+            border-radius: 50px;
+            font-weight: bold;
+            text-align: center;
+            background: #111;
+            color: white;
+            transition: all 0.3s;
+        }
+        .action-select {
+            border: 3px solid #ff3366;
+            min-width: 140px;
+            font-size: 16px;
+        }
+        .quantity-input {
+            border: 3px solid #ff3366;
+            width: 90px;
+            font-size: 18px;
+        }
+        .days-input {
+            border: 3px solid #4caf50;
+            width: 90px;
+            font-size: 18px;
+        }
+        .days-input + span {
+            color: #4caf50;
+            font-weight: bold;
+            font-size: 18px;
+            margin-left: 10px;
+        }
+        .remove-btn {
+            background: none;
+            border: none;
+            color: #ff3366;
+            font-size: 28px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .remove-btn:hover {
+            color: #ff1744;
+            transform: scale(1.4) rotate(10deg);
+        }
+        .cart-total {
+            text-align: right;
+            font-size: 42px;
+            font-weight: 900;
+            color: #ff3366;
+            margin: 60px 0 40px;
+            text-shadow: 0 0 20px rgba(255,51,102,0.6);
+        }
+        .checkout-btn {
+            display: block;
+            width: fit-content;
+            margin: 0 auto;
+            background: linear-gradient(45deg, #ff3366, #ff1744);
+            color: white;
+            padding: 20px 80px;
+            border: none;
+            border-radius: 50px;
+            font-size: 24px;
+            font-weight: 900;
+            cursor: pointer;
+            box-shadow: 0 20px 50px rgba(255,51,102,0.5);
+            transition: all 0.4s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .checkout-btn:hover {
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: 0 30px 70px rgba(255,51,102,0.7);
+        }
+        /* Ký hiệu vô hạn siêu to khổng lồ */
+        .infinity-symbol {
+            font-size: 48px;
+            color: #ff3366;
+            font-weight: 900;
+            margin-top: 15px;
+            text-shadow: 0 0 20px #ff3366;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 0.8; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.1); }
+        }
+    </style>
+</head>
+<body>
+    {% include 'partials/navbar.html' %}
+
+    <div class="container" style="padding:150px 20px;min-height:80vh">
+        <h2 class="section-title" style="text-align:center;margin-bottom:60px;color:#ff3366;font-size:42px">YOUR CART</h2>
+
+        {% if cart and cart|length > 0 %}
+        <form id="cart-form">
+            <table class="cart-table">
+                <thead>
+                    <tr>
+                        <th>Image</th>
+                        <th>Products</th>
+                        <th>Purchase or lease</th>
+                        <th>Quatity</th>
+                        <th>Number of rental hours </th>
+                        <th>Total</th>
+                        <th>Remove</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for item in cart %}
+                <!-- HTML trong <tbody> -->
+                <tr data-id="{{ item.product_id }}">
+                    <!-- ẢNH -->
+                    <td>
+                        <img class="cart-item-img" src="{{ url_for('static', filename=item.image_url|default('images/placeholder.jpg')) }}" alt="{{ item.name }}">
+                    </td>
+
+                    <!-- TÊN -->
+                    <td>{{ item.name }}</td>
+
+                    <!-- HÌNH THỨC -->
+                    <td>
+                        <select class="action-select" data-id="{{ item.product_id }}">
+                            <option value="buy" {% if item.action == 'buy' %}selected{% endif %}>Purchase</option>
+                            <option value="rent" {% if item.action == 'rent' %}selected{% endif %}>Rent</option>
+                        </select>
+                    </td>
+
+                    <!-- SỐ LƯỢNG -->
+                    <td>
+                        <input type="number" class="quantity-input" value="{{ item.quantity }}" min="1" style="width:70px">
+                    </td>
+
+                    <!-- NGÀY THUÊ -->
+                    <td class="rental-days-cell">
+                        {% if item.action == 'rent' %}
+                            <input type="number" class="days-input" value="{{ item.rental_days|default(7) }}" min="1" max="90" style="width:70px">
+                        {% else %}
+                            <div class="infinity-symbol">∞</div>
+                        {% endif %}
+                    </td>
+
+                    <!-- TỔNG -->
+                    <td class="item-total" style="color:#ff3366;font-weight:900">
+                        ${{ "%.2f"|format(item.price_usd * item.quantity) }}
+                    </td>
+
+                    <!-- XÓA -->
+                    <td>
+                        <button type="button" class="remove-btn"><i class="fas fa-trash-alt"></i></button>
+                    </td>
+                </tr>
+
+                {% endfor %}
+                </tbody>
+                </table>
+
+
+            </form>
+
+            <div class="cart-total">
+                Total: <span id="grand-total">${{ "%.2f"|format(total_price) }}</span>
+            </div>
+
+            <div style="text-align:right;margin-top:40px">
+                <a href="{{ url_for('order') }}" class="checkout-btn">
+                    PROCEED TO ORDER
+                </a>
+            </div>
+
+            {% else %}
+          <div class="empty-cart" style="display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;min-height:300px;">
+            <i class="fas fa-shopping-cart"></i>
+            <h3>YOUR CART IS EMPTY</h3>
+            <p><a href="{{ url_for('collections') }}" style="color:#ff3366;font-weight:bold">Let's shop</a> now!</p>
+          </div>
+
+            {% endif %}
+        </div>
+
+
+
+<script>
+function updateCartRow(tr) {
+    const product_id = tr.dataset.id;
+    const actionSelect = tr.querySelector('.action-select');
+    const quantityInput = tr.querySelector('.quantity-input');
+    const daysInput = tr.querySelector('.days-input');
+
+    const action = actionSelect.value;
+    const quantity = Math.max(1, parseInt(quantityInput.value) || 1);
+    let rental_days = 7;
+
+    // Nếu đang ở chế độ thuê thì lấy giá trị ngày, không thì để mặc định
+    if (action === 'rent' && daysInput) {
+        rental_days = Math.max(1, parseInt(daysInput.value) || 7);
+    }
+
+    // Cập nhật lại giá trị input để tránh giá trị âm hoặc rỗng
+    quantityInput.value = quantity;
+    if (daysInput) daysInput.value = rental_days;
+
+    fetch('/update_cart_item', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ product_id, action, quantity, rental_days })
+    })
+    .then(r => r.json())
+    .then(data => {
+        // 1. Cập nhật tổng tiền của dòng hiện tại
+        tr.querySelector('.item-total').textContent = '$' + data.item_total.toFixed(2);
+
+        // 2. Cập nhật tổng cộng toàn bộ giỏ hàng
+        document.getElementById('grand-total').textContent = '$' + data.grand_total.toFixed(2);
+
+        // 3. Cập nhật lại cột "Số ngày thuê" khi chuyển hình thức
+        const rentalCell = tr.querySelector('.rental-days-cell');
+
+        if (action === 'buy') {
+            rentalCell.innerHTML = '<div class="infinity-symbol">∞</div>';
+        } else {
+            // Nếu đang thuê → tạo lại input ngày và gắn sự kiện
+            rentalCell.innerHTML = `
+                <input type="number" class="days-input" value="${rental_days}" min="1" max="90" style="width:80px">
+                <span>ngày</span>
+            `;
+            // Quan trọng: gắn lại event cho input mới tạo
+            rentalCell.querySelector('.days-input').addEventListener('change', () => updateCartRow(tr));
+        }
+    })
+    .catch(err => {
+        console.error('Lỗi cập nhật giỏ hàng:', err);
+        alert('Có lỗi xảy ra, vui lòng thử lại!');
+    });
+}
+
+// Gắn toàn bộ sự kiện một lần khi trang tải xong
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('tr[data-id]').forEach(tr => {
+        const actionSelect = tr.querySelector('.action-select');
+        const quantityInput = tr.querySelector('.quantity-input');
+        const daysInput = tr.querySelector('.days-input');
+        const removeBtn = tr.querySelector('.remove-btn');
+
+        // Thay đổi hình thức mua/thuê
+        actionSelect.addEventListener('change', () => updateCartRow(tr));
+
+        // Thay đổi số lượng
+        quantityInput.addEventListener('change', () => updateCartRow(tr));
+        // Cho phép nhập bằng phím lên/xuống hoặc blur
+        quantityInput.addEventListener('blur', () => updateCartRow(tr));
+
+        // Thay đổi số ngày (nếu có)
+        if (daysInput) {
+            daysInput.addEventListener('change', () => updateCartRow(tr));
+        }
+
+        // Xóa sản phẩm
+        removeBtn.addEventListener('click', () => {
+            if (!confirm('Xóa sản phẩm khỏi giỏ hàng?')) return;
+
+            const product_id = tr.dataset.id;
+            const action = actionSelect.value;
+
+            fetch('/remove_from_cart', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ product_id, action })
+            })
+            .then(r => r.json())
+            .then(data => {
+                tr.remove();
+                document.getElementById('grand-total').textContent = '$' + data.grand_total.toFixed(2);
+                if (data.grand_total === 0) location.reload();
+            });
+        });
+    });
+});
+</script>
+
+
+</body>
+</html>

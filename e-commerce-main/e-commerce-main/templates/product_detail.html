@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ product.name }} - NOIR AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='templatemo-noir-fashion.css') }}">
+    <style>
+        .container{max-width:1300px;margin:0 auto;padding:80px 20px}
+        .product-grid{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:start}
+        .product-grid img{width:100%;border-radius:20px;box-shadow:0 20px 50px rgba(0,0,0,0.6)}
+        .product-info h1{font-size:48px;color:#ff3366;margin:0 0 20px}
+        .price{font-size:56px;color:#ff3366;font-weight:800}
+        .price-contact{font-size:36px;color:#ccc}
+        .desc{font-size:18px;line-height:1.9;color:#ddd;margin:40px 0}
+        .add-btn{background:#ff3366;color:#fff;padding:20px 80px;border:none;border-radius:50px;font-size:22px;font-weight:700;cursor:pointer}
+        .add-btn:hover{background:#ff1744;transform:translateY(-8px);box-shadow:0 25px 50px rgba(255,51,102,0.5)}
+        @media(max-width:992px){.product-grid{grid-template-columns:1fr}}
+    </style>
+</head>
+<body>
+    {% include 'partials/navbar.html' %}
+
+    <div class="container">
+        <div class="product-grid">
+            <div>
+                {% set img = product.image_url|default('images/placeholder.jpg') %}
+                {% if img.startswith('/') %}{% set img = img[1:] %}{% endif %}
+                <img src="{{ url_for('static', filename=img) }}" alt="{{ product.name }}">
+            </div>
+            <div class="product-info">
+                <h1>{{ product.name }}</h1>
+                {% if product.price_usd and product.price_usd > 0 %}
+                    <div class="price">${{ "%.2f"|format(product.price_usd) }}</div>
+                {% else %}
+                    <div class="price-contact">Contact for quote</div>
+                {% endif %}
+                <div class="desc">
+                    {{ product.description|default("Advanced AI technology products for sports") }}
+                </div>
+                {% if session.user_id %}
+                    <form action="{{ url_for('add_to_cart') }}" method="POST">
+                        <input type="hidden" name="product_id" value="{{ product.product_id }}">
+                        <button class="add-btn">ADD TO CART HÀNG</button>
+                    </form>
+                {% else %}
+                    <a href="{{ url_for('login') }}" class="add-btn" style="text-decoration:none;display:inline-block;text-align:center">
+                        LOGIN TO BUY
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đặt hàng - NOIR AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='templatemo-noir-fashion.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        .order-container{max-width:900px;margin:60px auto;padding:40px;background:rgba(15,15,20,0.98);border-radius:24px;border:2px solid #ff3366;box-shadow:0 30px 80px rgba(255,51,102,0.3)}
+        h1{color:#ff3366;text-align:center;margin-bottom:40px;font-size:42px}
+        .form-group{margin:20px 0}
+        label{display:block;margin-bottom:8px;color:#fff;font-weight:bold}
+        input, textarea{width:100%;padding:16px;border-radius:16px;background:#111;border:2px solid #ff3366;color:white;font-size:16px}
+        input:focus, textarea:focus{outline:none;border-color:#ff1744;box-shadow:0 0 20px rgba(255,51,102,0.5)}
+        button{background:#ff3366;color:white;padding:20px;border:none;border-radius:50px;font-size:22px;font-weight:900;width:100%;cursor:pointer;margin-top:30px}
+        button:hover{background:#ff1744;transform:translateY(-5px);box-shadow:0 20px 40px rgba(255,51,102,0.5)}
+        .summary{background:rgba(255,51,102,0.1);padding:25px;border-radius:20px;margin:30px 0}
+        .summary h3{color:#ff3366;margin-bottom:20px}
+        .item-row{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.1)}
+        .total-price{font-size:36px;color:#ff3366;font-weight:900;text-align:right;margin-top:30px}
+    </style>
+</head>
+<body>
+    {% include 'partials/navbar.html' %}
+
+    <div class="container" style="padding:150px 20px">
+        <div class="order-container">
+            <h1>Complete order</h1>
+
+            <div class="summary">
+                <h3>Order details ({{ cart|length }} Products)</h3>
+                {% for item in cart %}
+                <div class="item-row">
+                    <span>{{ item.name }} × {{ item.quantity }}
+                        {% if item.action == 'rent' %} (Rent {{ item.rental_days }} Hour){% endif %}
+                    </span>
+                    <strong style="color:#ff3366">${{ "%.2f"|format(item.price_usd * item.quantity) }}</strong>
+                </div>
+                {% endfor %}
+                <div class="total-price">
+                    Total: ${{ "%.2f"|format(total_price) }}
+                </div>
+            </div>
+
+            <form action="{{ url_for('order_success_post') }}" method="POST">
+                <div class="form-group">
+                    <label>Full name *</label>
+                    <input type="text" name="full_name" required placeholder="Robert Farebrother">
+                </div>
+                <div class="form-group">
+                    <label>Phone number *</label>
+                    <input type="tel" name="phone" required placeholder="0901234567">
+                </div>
+                <div class="form-group">
+                    <label>Delivery address *</label>
+                    <input type="text" name="address" required placeholder="207 Giai Phong, Hai Ba Trung, Ha Noi">
+                </div>
+                <div class="form-group">
+                    <label>Note (not required)</label>
+                    <textarea name="note" rows="3" placeholder="During business hours, call before coming..."></textarea>
+                </div>
+
+                <button type="submit">
+                    ORDER CONFIRMATION & QR TRANSFER
+                </button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
+
